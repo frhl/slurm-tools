@@ -1,4 +1,8 @@
 
+# get user-id (could also be retreived from USER variable)
+getuser () {
+    echo "$( id | tr " " "\n" | grep uid | grep -oP '\(\K[^\)]+' )"
+  }
 
 # get a nice overview of the queue
 gimmeq () {
