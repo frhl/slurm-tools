@@ -11,6 +11,29 @@ gimmeq () {
     awk -v user="${uid}" 'NR == 1 || $4==user'
 }
 
+# get a nice overview of the queue
+gimmelq () {
+  local uid=$(getuser)
+  squeue -o "%.18i %.9P %.40j %.8u %.2t %.10M  %C  %.6D %R %.8p" | \
+    awk -v user="${uid}" 'NR == 1 || $4==user' 
+}
+
+# get truncated overview
+gimmeqt () {
+  local _tmp=$(mktemp)
+  local _n=${1:-5}
+  gimmelq > ${_tmp}
+  cat ${_tmp} | head -n 1 | column -t
+  cat ${_tmp} | grep -w R | column -t
+  cat ${_tmp} | tail -n +2 | grep -vw R | head -n ${_n} | column -t
+  local n_waiting=$(cat ${_tmp} | grep -vw R | wc -l )
+  local n_hidden=$((${n_waiting}-${_n}))
+  if [ "${n_hidden}" -gt "0" ]; then
+    echo "... ${n_hidden} file(s) waiting in queue."
+  fi
+  rm ${_tmp}
+}
+
 
 # what fraction of nodes are you using? 
 hownaughtyami () {
@@ -76,7 +99,7 @@ sdel_dependency_jobs() {
 
 # good overview on finished jobs
 seff () {
-  sacct --format="JobID,JobName%10,Partition,NodeList,Elapsed,AllocCPUS,REQMEM,TotalCPU,State,AllocTRES%64,maxRSS,MaxVMSize"
+  sacct --format="JobID,JobName%20,Partition,NodeList,Elapsed,AllocCPUS,REQMEM,TotalCPU,State,AllocTRES%64,maxRSS,MaxVMSize"
 }
 
 # start interactive session on BMRC
