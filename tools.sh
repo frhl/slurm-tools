@@ -69,6 +69,28 @@ sdel_by_name_grep () {
 
 }
 
+sdel_by_partition () {
+  local string=${1?Error: arg1 (string)}
+  local uid=$(getuser)
+  local jids=$( squeue -o "%i %u %a %t %D %R %n %j %P" | \
+    awk -v user="${uid}" ' $2==user && $3=="lindgren.prj"' | \
+    cut -d" " -f1,9 | \
+    grep -w "${string}" | \
+    cut -d" " -f1 | \
+    cut -d"_" -f1 |  \
+    paste -s -d ',' | \
+    sed '$s/ $/\n/')
+  local n=$( echo ${jids} | tr "," "\n" | wc -l)
+  if [ "${n}" -gt "0" ] && [ ! -z "${jids}" ] ; then
+    echo "Deleting ${n} jobs on queue: "${string}" (${uid})."
+    scancel ${jids}
+  else
+    echo "No queue matching regex/string: "${string}" (${uid})."
+  fi
+
+}
+
+
 # delete a job in the queue waiting to be submitted
 sdel_pd_group () {
   local reason=${1?Error: arg1 (grep_reason)}
