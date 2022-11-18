@@ -35,9 +35,18 @@ gimmeqt () {
 }
 
 # What fraction of CPUs are we using
-slurm_usage() {
+slurm_usage_lindgren() {
   sreport -t percent -T ALL cluster AccountUtilizationByUser | grep lindgren | grep cpu
 }
+
+slurm_usage_global() {
+   sreport -p -t percent -T ALL cluster AccountUtilizationByUser | grep cpu | awk -F"|" '$3 != ""' | sed 's/ /-/g'
+}
+
+slurm_usage() {
+  slurm_usage_global | tr "|" "\t" | column -t
+}
+
 
 # what fraction of nodes are you using? 
 hownaughtyami () {
