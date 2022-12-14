@@ -44,7 +44,8 @@ slurm_usage_global() {
 }
 
 slurm_usage() {
-  slurm_usage_global | tr "|" "\t" | column -t
+  slurm_usage_global | tr "|" "\t" | sed 's/\%//g' | sort -n -k6 | awk '$6=$6"%"' | column -t
+  #slurm_usage_global | tr "|" "\t" | column -t
 }
 
 
@@ -78,6 +79,8 @@ sdel_by_name_grep () {
 
 }
 
+
+
 sdel_by_partition () {
   local string=${1?Error: arg1 (string)}
   local uid=$(getuser)
@@ -106,7 +109,7 @@ sdel_pd_group () {
   local uid=$(getuser)
   local jids=$(squeue -o "%i %u %a %t %D %R" | \
      awk -v user="${uid}" ' $2==user && $3=="lindgren.prj" && $4=="PD"' | \
-     grep "${reason}" | \
+     grep -E "${reason}" | \
      cut -d" " -f1 | \
      cut -d"_" -f1 |  \
      paste -s -d ',' | \
@@ -121,8 +124,9 @@ sdel_pd_group () {
 }
 
 sdel_failed_jobs() {
-  sdel_pd_group "(DependencyNeverSatisfied)"
+  sdel_pd_group "(DependencyNeverSatisfied)|(launch failed requeued held)"
 }
+
 
 sdel_priority_jobs() {
   sdel_pd_group "(DependencyNeverSatisfied)"
