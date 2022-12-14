@@ -44,8 +44,7 @@ slurm_usage_global() {
 }
 
 slurm_usage() {
-  slurm_usage_global | tr "|" "\t" | sed 's/\%//g' | sort -n -k6 | awk '$6=$6"%"' | column -t
-  #slurm_usage_global | tr "|" "\t" | column -t
+  slurm_usage_global | tr "|" "\t" | sed 's/\%//g' | sort -n -k6 | awk '$6=$6"%"' | column -t | grep --color "${USER}\|$"
 }
 
 
